@@ -5,6 +5,19 @@
 
 ---
 
+## 本项目已选定的模式（记录）
+
+| 项 | 选择 |
+| --- | --- |
+| **托管平台** | [Render](https://render.com)（Dashboard：`https://dashboard.render.com`） |
+| **运行方式** | **Docker**（仓库根目录 [`Dockerfile`](./Dockerfile)） |
+| **源码与发布** | GitHub 仓库 **`cathyliuwork/votely`**，`main` 分支；默认 **推送即自动构建/部署** |
+| **密钥** | `ADMIN_SECRET` 配置在 Render 服务 **Environment**；本地仅 `.env.local`（不入库） |
+| **适用预期** | **演示 / 试用**：免费实例会 **休眠**；磁盘 **非持久**，投票数据可能在重部署或重启后丢失 |
+| **长期使用/强持久** | 需改用带持久卷的方案（见下文 **Fly.io**）或其他托管数据库 |
+
+---
+
 ## 演示优先：尽量免费、少配置
 
 ### A. 本机运行 + Cloudflare 临时隧道（推荐，约 2 分钟）
@@ -126,6 +139,30 @@ docker run --rm -p 3000:3000 -e ADMIN_SECRET=dev-secret -v votely-data:/app/data
 
 - **Vercel 纯 Serverless**：与当前 `better-sqlite3` + 本地文件库组合不契合；若改为 Turso / Neon 等远程库可再考虑。
 - **任意支持 Docker 的云**：持久数据请把卷挂到 **`/app/data`**，并设置 **`ADMIN_SECRET`**。
+
+---
+
+## 日常更新与重新发布（Render）
+
+默认在 **连接 GitHub** 且打开 **Auto-Deploy** 时，流程是：
+
+1. 本地开发与自测：`npm run dev`（密钥仍用 `.env.local`，勿提交）。
+2. 提交并推到 **`main`**：
+   ```bash
+   git add -A
+   git commit -m "简述改动"
+   git push origin main
+   ```
+3. Render 检测到新提交后会 **自动重新构建并发布**；在服务的 **Events** / **Logs** 里可看进度。
+4. 部署完成后，刷新线上的 `https://你的服务.onrender.com` 即可。
+
+**仅在以下情况需要打开 Render 控制台手动操作：**
+
+- 改了 **环境变量**（如 `ADMIN_SECRET`）→ **Environment** 保存后，一般会自动触发一次部署；没有则点 **Manual Deploy**。
+- 关闭了自动部署 → 每次发版在 **Manual Deploy → Deploy latest commit**。
+- 构建失败 → 看 **Logs** 修代码后再 `git push`。
+
+**数据**：免费实例仍可能休眠；磁盘非持久，**不要指望线上 SQLite 当长期归档**，重要结果请另行导出或改用带卷的环境（如 Fly）。
 
 ---
 
