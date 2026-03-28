@@ -1,0 +1,16 @@
+# Render Blueprint：https://dashboard.render.com → New → Blueprint
+# 连接 Git 仓库后会读取本文件。务必在部署界面为 ADMIN_SECRET 填值（sync: false 表示不在 YAML 里写死）。
+# 免费 Web：会休眠；磁盘非持久，重启后 SQLite 可能清空——仅适合演示。
+
+services:
+  - type: web
+    name: votely
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ADMIN_SECRET
+        sync: false
